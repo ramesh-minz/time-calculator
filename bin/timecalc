@@ -1,0 +1,45 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require_relative "../lib/time_calculator"
+
+def help
+  puts <<~TXT
+    timecalc - Advanced Time Calculator
+
+    Usage:
+      timecalc "EXPR"
+
+    Supports:
+      - Time literals: HH:MM, MM:SS (auto), HH:MM:SS
+      - Units: d h m s (supports combos: 1h30m, 1h 30m, 1.5h)
+      - Operators: + - * / and parentheses
+      - Unary minus: -10m, -(2h+30m)
+
+    Examples:
+      timecalc "1:20:30 + 45m - 10s"
+      timecalc "(2h + 30m) * 3"
+      timecalc "90m / 30m"
+      timecalc "1d + 2:03:04"
+  TXT
+end
+
+expr = ARGV.join(" ").strip
+if expr.empty? || %w[-h --help help].include?(expr)
+  help
+  exit 0
+end
+
+begin
+  result = TimeCalculator.evaluate(expr)
+  if result[:pretty]
+    puts result[:pretty]
+    puts "seconds=#{result[:seconds]}"
+  else
+    puts result[:scalar]
+  end
+rescue TimeCalculator::Error => e
+  warn "Error: #{e.message}"
+  warn "Run: timecalc --help"
+  exit 1
+end
